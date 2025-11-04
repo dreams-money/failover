@@ -39,16 +39,19 @@ func removeVIPFromWireguardPeer(peerID string, cfg config.Config) error {
 	return editWireguardPeer(peer, cfg)
 }
 
-func removeVIPFromWireguardPeers(cfg config.Config) error {
+func removeVIPFromWireguardPeers(cfg config.Config) (int, error) {
 	var err error
+	var count int
+
 	for peer, peerConfig := range cfg.Peers {
 		err = removeVIPFromWireguardPeer(peerConfig.OpnSenseWireguardPeerID, cfg)
 		if err != nil {
-			return errors.Join(err, errors.New(peer))
+			return count, errors.Join(err, errors.New(peer))
 		}
+		count++
 	}
 
-	return nil
+	return count, nil
 }
 
 func addVIPToWireguardPeer(leader string, cfg config.Config) error {

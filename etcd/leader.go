@@ -76,5 +76,9 @@ func GetLeaderName(cfg config.Config) (string, error) {
 	keyValueEncoded := response.KeyValues[0].Value
 	value, err := base64.StdEncoding.DecodeString(keyValueEncoded)
 
+	if len(value) == 0 {
+		return "", fmt.Errorf("failed to get leader")
+	}
+
 	return string(value), err
 }
