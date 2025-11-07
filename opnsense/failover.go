@@ -16,10 +16,16 @@ func Failover(cfg config.Config) error {
 	logFailover(leader, cfg.NodeName)
 
 	if leader == cfg.NodeName {
-		return isPrimary(cfg)
+		err = isPrimary(cfg)
+	} else {
+		err = isReplica(leader, cfg)
 	}
 
-	return isReplica(leader, cfg)
+	if err != nil {
+		return err
+	}
+
+	return reconfigureWireguardService(cfg)
 }
 
 func isPrimary(cfg config.Config) error {
