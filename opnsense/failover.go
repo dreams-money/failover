@@ -16,40 +16,67 @@ func Failover(cfg config.Config) error {
 	logFailover(leader, cfg.NodeName)
 
 	if leader == cfg.NodeName {
-		err = isPrimary(cfg)
+		err = makePrimary(cfg)
 	} else {
-		err = isReplica(leader, cfg)
+		err = makeReplica(leader, cfg)
 	}
-
 	if err != nil {
 		return err
 	}
 
-	return reconfigureWireguardService(cfg)
+	err = reconfigureRoutes(cfg)
+	if err != nil {
+		return err
+	}
+	log.Println("Successfully reconfigured routes")
+
+	err = reconfigureWireguardService(cfg)
+	if err != nil {
+		return err
+	}
+	log.Println("Successfully reconfigured wireguard services")
+
+	return nil
 }
 
-func isPrimary(cfg config.Config) error {
-	count, err := removeVIPFromWireguardPeers(cfg)
+func makePrimary(cfg config.Config) error {
+	var err error
 
-	log.Printf("Removed VIP from %v peers.\n", count)
+	err = enableVIPRoute(cfg.VIPRouteID, cfg)
+	if err != nil {
+		return err
+	}
+	log.Printf("Enabled VIP route.")
 
-	return err
-}
-
-func isReplica(leader string, cfg config.Config) error {
 	count, err := removeVIPFromWireguardPeers(cfg)
 	if err != nil {
 		return err
 	}
+	log.Printf("Removed VIP from %v wireguard peers.\n", count)
 
-	log.Printf("Removed VIP from %v peers.\n", count)
+	return nil
+}
+
+func makeReplica(leader string, cfg config.Config) error {
+	var err error
+
+	err = disableVIPRoute(cfg.VIPRouteID, cfg)
+	if err != nil {
+		return err
+	}
+	log.Printf("Disabled VIP route.")
+
+	count, err := removeVIPFromWireguardPeers(cfg)
+	if err != nil {
+		return err
+	}
+	log.Printf("Removed VIP from %v wireguard peers.\n", count)
 
 	err = addVIPToWireguardPeer(leader, cfg)
 	if err != nil {
 		return err
 	}
-
-	log.Printf("Successfully added VIP to leader.\n")
+	log.Printf("Added VIP to leader.\n")
 
 	return nil
 }
