@@ -26,6 +26,8 @@ func Initialize(cfg config.Config) error {
 		time.Sleep(waitTime)
 	}
 
+	log.Print("Loaded leader", lastLeader)
+
 	return err
 }
 
