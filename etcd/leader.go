@@ -38,8 +38,14 @@ func GetLeaderName(cfg config.Config) (string, error) {
 	}
 	defer resp.Body.Close()
 
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
 	if resp.StatusCode != 200 {
-		return "", errors.New("failed to call ETCD")
+		e := "failed to call ETCD, status: %v, msg: %v"
+		return "", fmt.Errorf(e, resp.StatusCode, string(bodyBytes))
 	}
 
 	type Value struct {
@@ -49,11 +55,6 @@ func GetLeaderName(cfg config.Config) (string, error) {
 	type ETCDResponse struct {
 		KeyValues []Value `json:"kvs"`
 		Count     string  `json:"count"`
-	}
-
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
 	}
 
 	response := ETCDResponse{}

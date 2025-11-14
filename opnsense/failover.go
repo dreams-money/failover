@@ -2,6 +2,7 @@ package opnsense
 
 import (
 	"log"
+	"time"
 
 	"github.com/dreams-money/opnsense-failover/config"
 	"github.com/dreams-money/opnsense-failover/etcd"
@@ -11,8 +12,19 @@ var lastLeader string
 
 func Initialize(cfg config.Config) error {
 	var err error
+	waitTime := time.Duration(3 * time.Second)
 
-	lastLeader, err = etcd.GetLeaderName(cfg)
+	// We need to wait for ETCD to load
+	time.Sleep(waitTime)
+	for {
+		lastLeader, err = etcd.GetLeaderName(cfg)
+		if err == nil {
+			break
+		}
+		log.Println("Waiting for ETCD to load", err)
+
+		time.Sleep(waitTime)
+	}
 
 	return err
 }
