@@ -7,34 +7,44 @@ import (
 	"github.com/dreams-money/opnsense-failover/etcd"
 )
 
+var lastLeader string
+
+func Initialize(cfg config.Config) error {
+	var err error
+
+	lastLeader, err = etcd.GetLeaderName(cfg)
+
+	return err
+}
+
 func Failover(cfg config.Config) error {
-	leader, err := etcd.GetLeaderName(cfg)
+	newLeader, err := etcd.GetLeaderName(cfg)
 	if err != nil {
 		return err
 	}
 
-	logFailover(leader, cfg.NodeName)
+	logFailover(newLeader, cfg.NodeName)
 
-	if leader == cfg.NodeName {
+	needsRouteChange := needsRouteChange(newLeader, cfg.NodeName)
+
+	lastLeader = newLeader
+
+	if newLeader == cfg.NodeName {
 		err = makePrimary(cfg)
 	} else {
-		err = makeReplica(leader, cfg)
+		err = makeReplica(newLeader, cfg, needsRouteChange)
 	}
 	if err != nil {
 		return err
 	}
 
-	err = reconfigureRoutes(cfg)
-	if err != nil {
-		return err
+	if needsRouteChange {
+		err = reconfigureRoutes(cfg)
+		if err != nil {
+			return err
+		}
+		log.Println("Successfully reconfigured routes")
 	}
-	log.Println("Successfully reconfigured routes")
-
-	err = setWireguardService(cfg)
-	if err != nil {
-		return err
-	}
-	log.Println("Successfully set wireguard updates")
 
 	err = reconfigureWireguardService(cfg)
 	if err != nil {
@@ -63,14 +73,16 @@ func makePrimary(cfg config.Config) error {
 	return nil
 }
 
-func makeReplica(leader string, cfg config.Config) error {
+func makeReplica(leader string, cfg config.Config, needsRouteChange bool) error {
 	var err error
 
-	err = disableVIPRoute(cfg.VIPRouteID, cfg)
-	if err != nil {
-		return err
+	if needsRouteChange {
+		err = disableVIPRoute(cfg.VIPRouteID, cfg)
+		if err != nil {
+			return err
+		}
+		log.Printf("Disabled VIP route.")
 	}
-	log.Printf("Disabled VIP route.")
 
 	count, err := removeVIPFromWireguardPeers(cfg)
 	if err != nil {
@@ -95,4 +107,8 @@ func logFailover(leader, thisNode string) {
 	l += "\n"
 
 	log.Printf(l, leader)
+}
+
+func needsRouteChange(newLeader, thisNode string) bool {
+	return newLeader == thisNode || lastLeader == thisNode
 }

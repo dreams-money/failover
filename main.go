@@ -18,6 +18,11 @@ func main() {
 		log.Panic(err)
 	}
 
+	err = opnsense.Initialize(configuration)
+	if err != nil {
+		log.Panic(err)
+	}
+
 	// Set OpnSense Auth
 	opnsense.SetAuthorization(configuration.OpnSenseApiKey, configuration.OpnSenseApiSecret)
 	err = opnsense.SimpleCall(configuration)
