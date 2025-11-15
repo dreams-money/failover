@@ -19,6 +19,14 @@ type Route struct {
 	Disabled    string `json:"disabled"`
 }
 
+func (r *Route) IsEnabled() bool {
+	return r.Disabled == "0"
+}
+
+func (r *Route) IsDisabled() bool {
+	return r.Disabled == "1"
+}
+
 func getRoute(uuid string, cfg config.Config) (Route, error) {
 	url := "https://%v/api/routes/routes/searchroute"
 	url = fmt.Sprintf(url, cfg.OpnSenseAddress)

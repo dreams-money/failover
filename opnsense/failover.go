@@ -2,34 +2,10 @@ package opnsense
 
 import (
 	"log"
-	"time"
 
 	"github.com/dreams-money/opnsense-failover/config"
 	"github.com/dreams-money/opnsense-failover/etcd"
 )
-
-var lastLeader string
-
-func Initialize(cfg config.Config) error {
-	var err error
-	waitTime := time.Duration(3 * time.Second)
-
-	// We need to wait for ETCD to load
-	time.Sleep(waitTime)
-	for {
-		lastLeader, err = etcd.GetLeaderName(cfg)
-		if err == nil {
-			break
-		}
-		log.Println("Waiting for ETCD to load", err)
-
-		time.Sleep(waitTime)
-	}
-
-	log.Print("Loaded leader", lastLeader)
-
-	return err
-}
 
 func Failover(cfg config.Config) error {
 	newLeader, err := etcd.GetLeaderName(cfg)
@@ -39,20 +15,17 @@ func Failover(cfg config.Config) error {
 
 	logFailover(newLeader, cfg.NodeName)
 
-	needsRouteChange := needsRouteChange(newLeader, cfg.NodeName)
-
-	lastLeader = newLeader
-
+	toggledInternalRoute := false
 	if newLeader == cfg.NodeName {
-		err = makePrimary(cfg)
+		toggledInternalRoute, err = makePrimary(cfg)
 	} else {
-		err = makeReplica(newLeader, cfg, needsRouteChange)
+		toggledInternalRoute, err = makeReplica(newLeader, cfg)
 	}
 	if err != nil {
 		return err
 	}
 
-	if needsRouteChange {
+	if toggledInternalRoute {
 		err = reconfigureRoutes(cfg)
 		if err != nil {
 			return err
@@ -69,48 +42,44 @@ func Failover(cfg config.Config) error {
 	return nil
 }
 
-func makePrimary(cfg config.Config) error {
+func makePrimary(cfg config.Config) (bool, error) {
 	var err error
 
-	err = enableVIPRoute(cfg.VIPRouteID, cfg)
+	toggledInternalRoute, err := enableVIPRoute(cfg.VIPRouteID, cfg)
 	if err != nil {
-		return err
+		return toggledInternalRoute, err
 	}
 	log.Printf("Enabled VIP route.")
 
 	count, err := removeVIPFromWireguardPeers(cfg)
 	if err != nil {
-		return err
+		return toggledInternalRoute, err
 	}
 	log.Printf("Removed VIP from %v wireguard peers.\n", count)
 
-	return nil
+	return toggledInternalRoute, nil
 }
 
-func makeReplica(leader string, cfg config.Config, needsRouteChange bool) error {
-	var err error
-
-	if needsRouteChange {
-		err = disableVIPRoute(cfg.VIPRouteID, cfg)
-		if err != nil {
-			return err
-		}
-		log.Printf("Disabled VIP route.")
+func makeReplica(leader string, cfg config.Config) (bool, error) {
+	toggledInternalRoute, err := disableVIPRoute(cfg.VIPRouteID, cfg)
+	if err != nil {
+		return toggledInternalRoute, err
 	}
+	log.Printf("Disabled VIP route.")
 
 	count, err := removeVIPFromWireguardPeers(cfg)
 	if err != nil {
-		return err
+		return toggledInternalRoute, err
 	}
 	log.Printf("Removed VIP from %v wireguard peers.\n", count)
 
 	err = addVIPToWireguardPeer(leader, cfg)
 	if err != nil {
-		return err
+		return toggledInternalRoute, err
 	}
 	log.Printf("Added VIP to leader.\n")
 
-	return nil
+	return toggledInternalRoute, nil
 }
 
 func logFailover(leader, thisNode string) {
@@ -121,8 +90,4 @@ func logFailover(leader, thisNode string) {
 	l += "\n"
 
 	log.Printf(l, leader)
-}
-
-func needsRouteChange(newLeader, thisNode string) bool {
-	return newLeader == thisNode || lastLeader == thisNode
 }

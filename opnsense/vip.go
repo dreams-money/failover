@@ -7,26 +7,34 @@ import (
 	"github.com/dreams-money/opnsense-failover/config"
 )
 
-func disableVIPRoute(routeID string, cfg config.Config) error {
+func disableVIPRoute(routeID string, cfg config.Config) (bool, error) {
 	route, err := getRoute(routeID, cfg)
 	if err != nil {
-		return err
+		return false, err
+	}
+
+	if route.IsDisabled() {
+		return false, nil
 	}
 
 	route.Disabled = "1"
 
-	return editRoute(route, cfg)
+	return true, editRoute(route, cfg)
 }
 
-func enableVIPRoute(routeID string, cfg config.Config) error {
+func enableVIPRoute(routeID string, cfg config.Config) (bool, error) {
 	route, err := getRoute(routeID, cfg)
 	if err != nil {
-		return err
+		return false, err
+	}
+
+	if route.IsEnabled() {
+		return false, nil
 	}
 
 	route.Disabled = "0"
 
-	return editRoute(route, cfg)
+	return true, editRoute(route, cfg)
 }
 
 func removeVIPFromWireguardPeer(peerID string, cfg config.Config) error {
