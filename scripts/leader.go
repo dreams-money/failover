@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
 
 	"github.com/dreams-money/opnsense-failover/config"
 )
@@ -22,7 +23,10 @@ func GetLeaderName(cfg config.Config) (string, error) {
 
 	output, err := cmd.Output()
 
-	return string(output), err
+	str := string(output)
+	str = strings.TrimSpace(str)
+
+	return str, err
 }
 
 func isCygwin() bool {
