@@ -31,7 +31,7 @@ func main() {
 	http.HandleFunc("/failover", func(w http.ResponseWriter, r *http.Request) {
 		err := opnsense.Failover(configuration)
 		if err != nil {
-			log.Println(err)
+			log.Println("Failover failed", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

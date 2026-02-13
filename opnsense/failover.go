@@ -4,11 +4,11 @@ import (
 	"log"
 
 	"github.com/dreams-money/opnsense-failover/config"
-	"github.com/dreams-money/opnsense-failover/etcd"
+	"github.com/dreams-money/opnsense-failover/scripts"
 )
 
 func Failover(cfg config.Config) error {
-	newLeader, err := etcd.GetLeaderName(cfg)
+	newLeader, err := scripts.GetLeaderName(cfg)
 	if err != nil {
 		return err
 	}

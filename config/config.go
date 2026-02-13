@@ -15,10 +15,9 @@ type Config struct {
 	Peers                   `json:"peers"`
 	HeartBeatIntervalString string `json:"heartbeat_interval"`
 	HeartBeatInterval       time.Duration
-	ETCDAddress             string `json:"etcd_address"`
-	ETCDPort                string `json:"etcd_port"`
 	VIPAddress              string `json:"vip_address"`
 	VIPRouteID              string `json:"vip_route_id"`
+	LeaderScript            string `json:"leader_script"`
 }
 
 func LoadProgramConfiguration() (Config, error) {
