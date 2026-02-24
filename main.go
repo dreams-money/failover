@@ -6,9 +6,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/dreams-money/opnsense-failover/config"
-	"github.com/dreams-money/opnsense-failover/health"
-	"github.com/dreams-money/opnsense-failover/opnsense"
+	"github.com/dreams-money/failover/config"
+	"github.com/dreams-money/failover/health"
+	"github.com/dreams-money/failover/routers"
 )
 
 func main() {
@@ -18,9 +18,14 @@ func main() {
 		log.Panic(err)
 	}
 
-	// Set OpnSense Auth
-	opnsense.SetAuthorization(configuration.OpnSenseApiKey, configuration.OpnSenseApiSecret)
-	err = opnsense.SimpleCall(configuration)
+	router, err := routers.Make(configuration)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	// Set Router Auth
+	router.SetAuthorization(configuration)
+	err = router.SimpleCall(configuration)
 	if err != nil {
 		log.Println("Authorization failed", err)
 		os.Exit(1)
@@ -29,9 +34,9 @@ func main() {
 
 	// Failover endpoint
 	http.HandleFunc("/failover", func(w http.ResponseWriter, r *http.Request) {
-		err := opnsense.Failover(configuration)
+		err := router.Failover(configuration)
 		if err != nil {
-			log.Println("Failover failed", err)
+			log.Println("Router Failover failed", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -41,7 +46,7 @@ func main() {
 
 	// Health check endpoint
 	http.HandleFunc("/heartbeat", func(w http.ResponseWriter, r *http.Request) {
-		err = opnsense.SimpleCall(configuration)
+		err = router.SimpleCall(configuration)
 		if err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)

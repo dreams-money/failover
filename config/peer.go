@@ -3,9 +3,9 @@ package config
 import "fmt"
 
 type Peer struct {
-	OpnSenseWireguardPeerID string `json:"opnsense_wireguard_peer_id"`
-	Address                 string `json:"address"`
-	CheckHealth             bool   `json:"check_health"`
+	WireguardPeerID string `json:"wireguard_peer_id"`
+	Address         string `json:"address"`
+	CheckHealth     bool   `json:"check_health"`
 }
 
 type Peers map[string]Peer

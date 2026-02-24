@@ -7,12 +7,12 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/dreams-money/opnsense-failover/config"
+	"github.com/dreams-money/failover/config"
 )
 
 func setWireguardService(cfg config.Config) error {
 	url := "https://%v/api/wireguard/general/set"
-	url = fmt.Sprintf(url, cfg.OpnSenseAddress)
+	url = fmt.Sprintf(url, cfg.RouterAddress)
 
 	payload := "{general: {enabled: \"1\"}}"
 	buffer := bytes.NewBuffer([]byte(payload))
@@ -61,7 +61,7 @@ func setWireguardService(cfg config.Config) error {
 
 func reconfigureWireguardService(cfg config.Config) error {
 	url := "https://%v/api/wireguard/service/reconfigure"
-	url = fmt.Sprintf(url, cfg.OpnSenseAddress)
+	url = fmt.Sprintf(url, cfg.RouterAddress)
 
 	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {

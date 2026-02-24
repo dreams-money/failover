@@ -1,3 +1,8 @@
-module github.com/dreams-money/opnsense-failover
+module github.com/dreams-money/failover
 
-go 1.23.5
+go 1.24.0
+
+require (
+	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/term v0.40.0 // indirect
+)

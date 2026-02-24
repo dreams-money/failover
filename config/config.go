@@ -7,11 +7,11 @@ import (
 )
 
 type Config struct {
-	NodeName                string `json:"node_name"`
-	OpnSenseAddress         string `json:"opnsense_address"`
-	OpnSenseApiKey          string `json:"opnsense_api_key"`
-	OpnSenseApiSecret       string `json:"opnsense_api_secret"`
-	AppPort                 string `json:"app_port"`
+	NodeName                string          `json:"node_name"`
+	RouterType              string          `json:"router_type"`
+	RouterAddress           string          `json:"router_address"`
+	RouterConfig            json.RawMessage `json:"router_config"`
+	AppPort                 string          `json:"app_port"`
 	Peers                   `json:"peers"`
 	HeartBeatIntervalString string `json:"heartbeat_interval"`
 	HeartBeatInterval       time.Duration

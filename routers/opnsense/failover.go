@@ -3,11 +3,11 @@ package opnsense
 import (
 	"log"
 
-	"github.com/dreams-money/opnsense-failover/config"
-	"github.com/dreams-money/opnsense-failover/scripts"
+	"github.com/dreams-money/failover/config"
+	"github.com/dreams-money/failover/scripts"
 )
 
-func Failover(cfg config.Config) error {
+func (Router) Failover(cfg config.Config) error {
 	newLeader, err := scripts.GetLeaderName(cfg)
 	if err != nil {
 		return err

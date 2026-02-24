@@ -8,7 +8,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/dreams-money/opnsense-failover/config"
+	"github.com/dreams-money/failover/config"
 )
 
 type Route struct {
@@ -29,7 +29,7 @@ func (r *Route) IsDisabled() bool {
 
 func getRoute(uuid string, cfg config.Config) (Route, error) {
 	url := "https://%v/api/routes/routes/searchroute"
-	url = fmt.Sprintf(url, cfg.OpnSenseAddress)
+	url = fmt.Sprintf(url, cfg.RouterAddress)
 	route := Route{}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -85,7 +85,7 @@ func getRoute(uuid string, cfg config.Config) (Route, error) {
 
 func editRoute(route Route, cfg config.Config) error {
 	url := "https://%v/api/routes/routes/setroute/%v"
-	url = fmt.Sprintf(url, cfg.OpnSenseAddress, route.ID)
+	url = fmt.Sprintf(url, cfg.RouterAddress, route.ID)
 
 	type Payload struct {
 		Route `json:"route"`
@@ -140,7 +140,7 @@ func editRoute(route Route, cfg config.Config) error {
 
 func reconfigureRoutes(cfg config.Config) error {
 	url := "https://%v/api/routes/routes/reconfigure"
-	url = fmt.Sprintf(url, cfg.OpnSenseAddress)
+	url = fmt.Sprintf(url, cfg.RouterAddress)
 
 	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {

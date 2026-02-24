@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/dreams-money/opnsense-failover/config"
+	"github.com/dreams-money/failover/config"
 )
 
 func disableVIPRoute(routeID string, cfg config.Config) (bool, error) {
@@ -64,7 +64,7 @@ func removeVIPFromWireguardPeers(cfg config.Config) (int, error) {
 	var count int
 
 	for peer, peerConfig := range cfg.Peers {
-		err = removeVIPFromWireguardPeer(peerConfig.OpnSenseWireguardPeerID, cfg)
+		err = removeVIPFromWireguardPeer(peerConfig.WireguardPeerID, cfg)
 		if err != nil {
 			return count, errors.Join(err, errors.New(peer))
 		}
@@ -80,7 +80,7 @@ func addVIPToWireguardPeer(leader string, cfg config.Config) error {
 		return err
 	}
 
-	peer, err := getWireguardPeer(peerCfg.OpnSenseWireguardPeerID, cfg)
+	peer, err := getWireguardPeer(peerCfg.WireguardPeerID, cfg)
 	if err != nil {
 		return err
 	}

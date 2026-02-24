@@ -10,8 +10,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/dreams-money/opnsense-failover/config"
-	"github.com/dreams-money/opnsense-failover/notifications"
+	"github.com/dreams-money/failover/config"
+	"github.com/dreams-money/failover/notifications"
 )
 
 type Peer struct {
@@ -29,7 +29,7 @@ type Peer struct {
 
 func getWireguardPeer(peerID string, cfg config.Config) (Peer, error) {
 	url := "https://%v/api/wireguard/client/search_client"
-	url = fmt.Sprintf(url, cfg.OpnSenseAddress)
+	url = fmt.Sprintf(url, cfg.RouterAddress)
 	peer := Peer{}
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -86,7 +86,7 @@ func getWireguardPeer(peerID string, cfg config.Config) (Peer, error) {
 
 func editWireguardPeer(peer Peer, cfg config.Config) error {
 	url := "https://%v/api/wireguard/client/set_client/%v"
-	url = fmt.Sprintf(url, cfg.OpnSenseAddress, peer.ID)
+	url = fmt.Sprintf(url, cfg.RouterAddress, peer.ID)
 
 	type jsonRequest struct {
 		Peer `json:"client"`
