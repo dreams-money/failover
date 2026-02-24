@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/dreams-money/opnsense-failover/config"
+	"github.com/dreams-money/failover/config"
 )
 
 func GetLeaderName(cfg config.Config) (string, error) {
@@ -16,7 +16,7 @@ func GetLeaderName(cfg config.Config) (string, error) {
 	if runtime.GOOS == "linux" || isCygwin() {
 		cmd = exec.Command("bash", "-c", cfg.LeaderScript)
 	} else if runtime.GOOS == "windows" {
-		cmd = exec.Command("CMD.exe", "/C", cfg.LeaderScript)
+		cmd = exec.Command("powershell", "-Command", cfg.LeaderScript)
 	} else {
 		return "", fmt.Errorf("Unknown Runtime - OS: %v, TERM: %v", runtime.GOOS, os.Getenv("TERM"))
 	}
