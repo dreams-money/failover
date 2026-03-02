@@ -1,8 +1,6 @@
 package opnsense
 
 import (
-	"log"
-
 	"github.com/dreams-money/failover/config"
 )
 
@@ -15,7 +13,6 @@ func (Router) SimpleCall(cfg config.Config) error {
 	_, err := getWireguardPeer(peer.WireguardPeerID, cfg)
 
 	if err != nil {
-		log.Println(err)
 		return err
 	}
 
