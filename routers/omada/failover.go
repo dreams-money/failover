@@ -4,15 +4,9 @@ import (
 	"log"
 
 	"github.com/dreams-money/failover/config"
-	"github.com/dreams-money/failover/scripts"
 )
 
-func (Router) Failover(cfg config.Config) error {
-	leader, err := scripts.GetLeaderName(cfg)
-	if err != nil {
-		return err
-	}
-
+func (Router) Failover(cfg config.Config, leader string) error {
 	logFailover(leader, cfg.NodeName)
 
 	if leader == cfg.NodeName {

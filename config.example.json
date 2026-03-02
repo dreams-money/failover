@@ -1,5 +1,7 @@
 {
     "node_name": "patroni-portland",
+    "ha_provider": "patroni",
+    "ha_api_address": "http://localhost:2379",
     "router_type": "opnsense",
     "router_address": "10.10.10.10",
     "router_config": {
@@ -14,19 +16,24 @@
     },
     "peers": {
         "patroni-san-franciso": {
+            "ddns": "sf.ddns.net",
             "check_health": true,
             "wireguard_peer_id": "secret-secret-secret-secret-secret",
-            "address": "10.10.10.1:8007"
+            "address": "10.10.10.1:8007",
+            "replica_weight": 60
         },
         "patroni-los-angeles": {
+            "ddns": "la.ddns.net",
             "check_health": true,
             "wireguard_peer_id": "secret-secret-secret-secret-secret",
-            "address": "10.10.10.2:8007"
+            "address": "10.10.10.2:8007",
+            "replica_weight": 40
         }
     },
+    "dns_primary": "x.y.com",
+    "dns_replica": "x.y.com",
     "heartbeat_interval": "4s",
     "app_port": "8007",
     "vip_address": "20.10.10.10/32",
-    "vip_route_id": "secret-secret-secret-secret-secret",
-    "leader_script": "./check_leader.sh"
+    "vip_route_id": "secret-secret-secret-secret-secret"
 }

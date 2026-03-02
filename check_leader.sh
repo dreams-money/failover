@@ -1,1 +1,0 @@
-curl -s -X POST http://localhost:2379/v3/kv/range -d '{"key":"L3NlcnZpY2UvcG9zdGdyZXMtaGEvbGVhZGVy"}' | jq '.kvs.[0].value' | sed -e 's/^"//' -e 's/"$//' | base64 -d

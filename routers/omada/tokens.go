@@ -47,7 +47,7 @@ func RefreshTokens(cfg Config) error {
 		return err
 	}
 
-	log.Println("Successfully refreshed tokens.")
+	log.Println("Successfully router refreshed tokens.")
 
 	if newTime != accessTokenTime {
 		accessTokenTime = newTime
@@ -68,7 +68,7 @@ func RefreshTokensJob(cfg Config) {
 }
 
 func refreshToken(c Config) (time.Duration, error) {
-	log.Println("Refreshing access tokens")
+	log.Println("Refreshing router access tokens")
 
 	refreshToken, err := persistence.GetRefreshToken()
 	if err != nil {

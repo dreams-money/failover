@@ -7,17 +7,20 @@ import (
 )
 
 type Config struct {
-	NodeName                string          `json:"node_name"`
-	RouterType              string          `json:"router_type"`
-	RouterAddress           string          `json:"router_address"`
-	RouterConfig            json.RawMessage `json:"router_config"`
-	AppPort                 string          `json:"app_port"`
-	Peers                   `json:"peers"`
-	HeartBeatIntervalString string `json:"heartbeat_interval"`
-	HeartBeatInterval       time.Duration
-	VIPAddress              string `json:"vip_address"`
-	VIPRouteID              string `json:"vip_route_id"`
-	LeaderScript            string `json:"leader_script"`
+	NodeName                   string          `json:"node_name"`
+	RouterType                 string          `json:"router_type"`
+	RouterAddress              string          `json:"router_address"`
+	RouterConfig               json.RawMessage `json:"router_config"`
+	AppPort                    string          `json:"app_port"`
+	HighAvailabilityProvider   string          `json:"ha_provider"`
+	HighAvailabilityAPIAddress string          `json:"ha_api_address"`
+	Peers                      `json:"peers"`
+	HeartBeatIntervalString    string `json:"heartbeat_interval"`
+	HeartBeatInterval          time.Duration
+	DNSPrimary                 string `json:"dns_primary"`
+	DNSReplica                 string `json:"dns_replica"`
+	VIPAddress                 string `json:"vip_address"`
+	VIPRouteID                 string `json:"vip_route_id"`
 }
 
 func LoadProgramConfiguration() (Config, error) {

@@ -7,9 +7,13 @@ import (
 	"time"
 
 	"github.com/dreams-money/failover/config"
+	"github.com/dreams-money/failover/dns"
+	"github.com/dreams-money/failover/ha"
 	"github.com/dreams-money/failover/health"
 	"github.com/dreams-money/failover/routers"
 )
+
+var CurrentStatus ha.ClusterStatus
 
 func main() {
 	// Load config
@@ -32,14 +36,46 @@ func main() {
 		return
 	}
 
+	// Get High Avaliability Provider
+	provider, err := ha.MakeProvider(configuration.HighAvailabilityProvider)
+	if err != nil {
+		log.Println("Failed to create high avaliability provider", err)
+		os.Exit(1)
+		return
+	}
+
 	// Failover endpoint
 	http.HandleFunc("/failover", func(w http.ResponseWriter, r *http.Request) {
-		err := router.Failover(configuration)
+		clusterStatus, err := provider.GetClusterStatus(configuration)
 		if err != nil {
-			log.Println("Router Failover failed", err)
+			log.Println("Failed to get cluster status", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+
+		leader, err := clusterStatus.GetLeaderName()
+		if err != nil {
+			log.Println("Failed to get leader name", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		routerErr := router.Failover(configuration, leader)
+		if routerErr != nil {
+			log.Println("Router failover failed", routerErr)
+		}
+
+		dnsErr := dns.Failover(configuration, clusterStatus)
+		if dnsErr != nil {
+			log.Println("DNS failover failed", dnsErr)
+		}
+
+		if routerErr != nil || dnsErr != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		CurrentStatus = clusterStatus.Copy()
 
 		w.WriteHeader(http.StatusOK)
 	})

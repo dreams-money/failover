@@ -11,7 +11,7 @@ import (
 type Router interface {
 	SetAuthorization(config.Config)
 	SimpleCall(config.Config) error
-	Failover(config.Config) error
+	Failover(config.Config, string) error
 }
 
 func Make(cfg config.Config) (Router, error) {

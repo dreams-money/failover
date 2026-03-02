@@ -4,14 +4,10 @@ import (
 	"log"
 
 	"github.com/dreams-money/failover/config"
-	"github.com/dreams-money/failover/scripts"
 )
 
-func (Router) Failover(cfg config.Config) error {
-	newLeader, err := scripts.GetLeaderName(cfg)
-	if err != nil {
-		return err
-	}
+func (Router) Failover(cfg config.Config, newLeader string) error {
+	var err error
 
 	logFailover(newLeader, cfg.NodeName)
 
@@ -37,7 +33,7 @@ func (Router) Failover(cfg config.Config) error {
 	if err != nil {
 		return err
 	}
-	log.Println("Successfully reconfigured wireguard services")
+	log.Println("Successfully reconfigured wireguard services on router")
 
 	return nil
 }
